@@ -1,3 +1,19 @@
+# Result
+
+![alt text](Code_n2ayXrq6lg-14Friday-01PM.png)
+
+- Building and Testing
+
+```
+docker build -t my-scheduler:build -f Dockerfile-build .
+docker run -it --rm -v $(pwd):/go/src/app my-scheduler:build
+```
+>   inside docker:
+```
+# go clean -testcache 
+go test -v ./...
+```
+
 # Scheduler Plugin
 ## Goal
 In this assignment, you are asked to implement a custom Kubernetes scheduler and learn the following skills:
