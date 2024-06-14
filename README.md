@@ -1,18 +1,53 @@
 # Result
 
-![alt text](Code_n2ayXrq6lg-14Friday-01PM.png)
+**Read report.pdf**
 
-- Building and Testing
+## Part II
+### Building and Testing
 
-```
+```sh
 docker build -t my-scheduler:build -f Dockerfile-build .
 docker run -it --rm -v $(pwd):/go/src/app my-scheduler:build
 ```
->   inside docker:
-```
+- inside docker:
+```sh
 # go clean -testcache 
 go test -v ./...
 ```
+
+## Part III
+
+### Building
+
+```sh
+make buildLocal # build the image of the custom scheduler
+make loadImage # load the image to the cluster
+```
+
+Change `mode` in `chats/values.yaml` before deploy if you want
+
+```sh
+make deploy
+```
+
+To remove is to run
+```sh
+make remove
+```
+
+### Validating
+
+use `scenario[1,2,3].yaml` to load pod spec
+- scenario1 is for PreFilter
+- scenario2 is for Least Mode
+- scenario3 is for Most Mode, you need to modify `mode` in `chats/values.yaml` before that
+```sh
+kubectl create -f scenario<x>.yaml
+kubectl logs <my-scheduler-xxx> # show the logs of your scheduler
+kubectl get po -o wide # show the status of pods and where it is scheduled
+kubectl delete -f scenario<x>.yaml # remove pod before next validation
+```
+
 
 # Scheduler Plugin
 ## Goal

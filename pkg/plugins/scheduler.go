@@ -74,6 +74,7 @@ func (cs *CustomScheduler) PreFilter(ctx context.Context, state *framework.Cycle
 	podNum, _ := strconv.Atoi(pod.ObjectMeta.Labels["minAvailable"])
 	selector := labels.SelectorFromSet(labels.Set{"podGroup": podGroup})
 	pods, _ := cs.handle.SharedInformerFactory().Core().V1().Pods().Lister().List(selector)
+	log.Printf("Pod len is %d while PreFiltering pod %s.", len(pods), pod.Name)
 	if len(pods) >= podNum {
 		return nil, newStatus
 	} else {
@@ -97,10 +98,12 @@ func (cs *CustomScheduler) Score(ctx context.Context, state *framework.CycleStat
 	if err != nil {
 		return 0, nil
 	}
+	memoryLeft := nodeInfo.Allocatable.Memory - nodeInfo.NonZeroRequested.Memory
+	log.Printf("Node memory left for %s is %f MiB while PreFiltering pod %s with mode %s.", nodeName, float32(memoryLeft)/1048576.0, pod.Name, cs.scoreMode)
 	if cs.scoreMode == leastMode {
-		return -(nodeInfo.Allocatable.Memory - nodeInfo.NonZeroRequested.Memory), framework.NewStatus(framework.Success)
+		return -memoryLeft, framework.NewStatus(framework.Success)
 	} else if cs.scoreMode == mostMode {
-		return (nodeInfo.Allocatable.Memory - nodeInfo.NonZeroRequested.Memory), framework.NewStatus(framework.Success)
+		return memoryLeft, framework.NewStatus(framework.Success)
 	}
 
 	return 0, nil
